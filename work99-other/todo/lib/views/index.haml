@@ -1,0 +1,29 @@
+!!!
+%html
+  %head
+    %meta(charset='utf-8')
+    %title Todo Application
+    %link(href='/css/bootstrap.min.css' rel='stylesheet' type='text/css')
+  %body
+    .navbar.navbar-inner
+      %a.brand(href='/tasks') Todo Application
+
+    .container
+      %h1 Listing Tasks
+
+      %table.table.table-striped.table-hover.table-borderd
+        %thread
+          %tr
+          %th ID
+          %th Name
+          %th Content
+          %th Statsu
+          %th Created Time
+        %tbody
+          - @tasks.each do |task|
+            %tr
+              %td= task.id
+              %td= task.name
+              %td= task.content
+              %td= task.status_name
+              %td= task.created_at.strftime('%Y/%m/%d %H:%M:%S')

@@ -1,0 +1,24 @@
+{
+	"always_show_minimap_viewport": true,
+	"color_scheme": "Packages/User/SublimeLinter/Cobalt (SL).tmTheme",
+	"draw_minimap_border": true,
+	"draw_white_space": "selection",
+	"font_face": "Ricty",
+	"font_size": 10,
+	"highlight_line": true,
+	"ignored_packages":
+	[
+		"Vintage"
+	],
+	"indent_guide_options":
+	[
+		"draw_normal"
+	],
+	"margin": 4,
+	"preview_on_click": false,
+	"show_encoding": true,
+	"show_line_endings": true,
+	"soda_classic_tabs": true,
+	"theme": "Soda Light 3.sublime-theme",
+	"word_wrap": "false"
+}
