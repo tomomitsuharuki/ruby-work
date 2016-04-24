@@ -3,6 +3,7 @@
 ##------------------------------------------------------------------------------------------------
 require "pp"
 require "yaml"
+require "date"
 require "optparse"
 require "fileutils"
 require "find"
@@ -19,20 +20,32 @@ WEB_APP_END = <<"EOS"
 #---------------------------------------
 EOS
 
+BODY_TEMPLATE = <<"EOS"
+Hi All
+
+(This is an automatic message of the merge completion.)
+Merge was completed.
+Please confirm it as follows.
+
+EOS
+
 ##------------------------------------------------------------------------------------------------
 ## Merger Class
 class Merger
   def initialize(branch, yaml)
     @yaml = yaml
     @branch = branch;
+    @dir = "";
     @export_dir = "";
     @repo = "";
     @repo_ = "";
     @root = "";
     @webapp = "";
     @last_commit = "";
+    @change_list = "";
     @settings = {};
     @mail = {};
+    @time_stamp = DateTime.now.strftime("%Y%m%d_%H%M_%S");
     select_branch();
     load_yaml();
   end
@@ -40,15 +53,17 @@ class Merger
   ## Select Branch
   def select_branch
     if @branch == "master"
-      @export_dir = "export" + "/master";
+      @dir = "/master";
+      @export_dir = "export" + @dir;
       @repo = "origin/master";
       @repo_ = "origin/release/bdre12g/gm1.8";
-      @root = ENV['P4PATH_12G_BASELINE']
+      @root = ENV['P4PATH_12G_BASELINE'];
     elsif @branch == "gm1.8"
-      @export_dir = "export" + "/release_gm1.8";
+      @dir = "/release_gm1.8";
+      @export_dir = "export" + @dir;
       @repo = "origin/release/bdre12g/gm1.8";
       @repo_ = "origin/master";
-      @root = ENV['P4PATH_12G_MP']
+      @root = ENV['P4PATH_12G_MP'];
     else
       puts "Please input param [master | gm1.8]"
       puts "Error Exit!"
@@ -185,20 +200,39 @@ class Merger
     puts "Submit!!!";
     %x[p4 submit -d [BDRE12G][R12GTD-2309] Merged from term git by #{last_commit}"] if settings["enable_p4_submit"];
     p4_changes = %x[p4 changes -m1];
+    @change_list = p4_changes.split(" ")[1];
     File.write(export_dir+"/submit_info.txt") if settings["enable_p4_submit"];    
   end
 
   ## Backup
   def backup_change_info
-    
+    backup_base = "../merge_backup"; FileUtils.mkdir_p(backup_base) unless File.exist?(backup_base);
+    backup_dir = backup_base + @dir + "_" + @time_stamp;
+    # p backup_dir;
+    FileUtils.cp_r(export_dir, backup_dir);
+    FileUtils.rm_rf(backup_dir + "app.tar");
+    puts "Backup to [#{backup_dir}]";
   end
 
   ## Auto Mail
-  def create_message
-  end
+  def mail
+    ## Create Message
+    subject = "[BDRE12G][WebApp Merge] Finish Merge GitHub to P4: #{@time_stamp}_CL#{@change_list}@#{@branch}"
+    body = BODY_TEMPLATE;
+    # body += File.read(export_dir + "/change_info_git.txt");
+    body += "TEST Change info git";
+    body += "/n";
+    body += "Best regards";
+    # temp_git = "#{export_dir}/change_info_git.txt";
+    # temp_p4 = "#{export_dir}/change_info_p4.txt";
+    to_address = @mail["to_address"].join(",");
+    cc_address = @mail["cc_address"].join(",");
 
-  def send_mail
-    
+    puts "Subject: #{subject}";
+    puts "To     : #{to_address}";
+    puts "Cc     : #{cc_address}";
+    puts "Body   :";
+    puts "#{body}";
   end
 
   ## Last Message
@@ -229,8 +263,10 @@ puts parser.help if option.empty?
 ## Merge
 merger = Merger.new(option[:branch], option[:yaml]);
 # merger.p4_pre_check();
-merger.p4_sync();
+# merger.p4_sync();
 # merger.load_last_commit();
 # merger.make_fslist();
+# merger.backup_change_info();
+merger.mail();
 
 merger.finish();
