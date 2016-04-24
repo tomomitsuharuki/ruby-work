@@ -1,0 +1,16 @@
+# Stting file for merge.rb
+
+virsion: 0.1
+
+settings:
+  enable_p4_sync:   false
+  enable_p4_submit: false
+  enable_send_mail: false
+
+mail:
+  to_address:
+    - tomomitsuh@sony.co.jp
+    - test@email.com
+  cc_address:
+    - test2@email.com
+

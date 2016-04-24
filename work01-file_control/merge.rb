@@ -1,7 +1,8 @@
-#!/usr/bin/evn ruby
-#coding: utf-8
+#!/usr/bin/ruby
+# -*- coding: utf-8 -*-
 ##------------------------------------------------------------------------------------------------
 require "pp"
+require "yaml"
 require "optparse"
 require "fileutils"
 require "find"
@@ -21,7 +22,8 @@ EOS
 ##------------------------------------------------------------------------------------------------
 ## Merger Class
 class Merger
-  def initialize(branch)
+  def initialize(branch, yaml)
+    @yaml = yaml
     @branch = branch;
     @export_dir = "";
     @repo = "";
@@ -29,7 +31,10 @@ class Merger
     @root = "";
     @webapp = "";
     @last_commit = "";
+    @settings = {};
+    @mail = {};
     select_branch();
+    load_yaml();
   end
 
   ## Select Branch
@@ -59,6 +64,21 @@ class Merger
     puts "Select [#{@repo}] to [#{@root}]";
   end
 
+  ## YAML
+  def load_yaml
+    if @yaml.nil? || File.exist?(@yaml) == false
+      puts "Please input YAML file";
+      error_exit();
+    end
+
+    config = YAML.load_file(@yaml);
+    @settings = config["settings"];
+    @mail = config["mail"]
+    # pp config;
+    pp @settings;
+    pp @mail;
+  end
+
   ## Pre-Check P4 Opened
   def p4_pre_check
     puts "pre-check p4 opened";
@@ -73,8 +93,8 @@ class Merger
 
   ## P4 Sync
   def p4_sync
-    # puts %x[echo p4 sync #{@webapp}"/..."]
-    puts %x[p4 sync #{@webapp}"/..."]
+    puts %x[echo p4 sync #{@webapp}"/..."] if @settings["enable_p4_sync"];
+    # puts %x[p4 sync #{@webapp}"/..."] if @settings["enable_p4_sync"];
   end
 
   ## Load Last Commit
@@ -105,20 +125,29 @@ class Merger
 
   ## Merge
   def p4_edit_for_merge
-    
+    FileUtils.rm_rf(@webapp + "/app");
+    puts "tar #{webapp}/app/..."
+    %x[tar -C #{webapp}/ -xf #{export_dir}/app.tar];
+    puts "Start Add and Edit and Revert";
+    %x[p4 add #{webapp}/app/...];
+    %x[p4 edit #{webapp}/app/...];
+    %x[p4 revert -a #{webapp}/app/...];
   end
 
   ## Output P4 Chenges
   def output_change_info_p4
-    
+    opened_list = %x[p4 opened];
+    puts "===== P4 Opened List =====";
+    puts opened_list;
+    File.write(@export_dir + "/change_info_p4.txt", opened_list);
   end
 
   ## rootfs-list
   def make_fslist
-    # add_files = %x[p4 opened | grep "add default change"];
-    # return if $?
-    # puts "!!!!! There is an additional file!!!!!"
-    # puts add_files;
+    adding_list = %x[p4 opened | grep "add default change"];
+    return if $?
+    puts "!!!!! There is an additional file!!!!!"
+    puts adding_list;
 
     ## create temp list
     app_list = [];
@@ -148,12 +177,15 @@ class Merger
 
   ## LAST_COMMIT
   def update_last_commit
-    
+    %x[p4 edit #{webapp}/LAST_COMMIT];
   end
 
   ## Submit
   def p4_submit
-    
+    puts "Submit!!!";
+    %x[p4 submit -d [BDRE12G][R12GTD-2309] Merged from term git by #{last_commit}"] if settings["enable_p4_submit"];
+    p4_changes = %x[p4 changes -m1];
+    File.write(export_dir+"/submit_info.txt") if settings["enable_p4_submit"];    
   end
 
   ## Backup
@@ -185,18 +217,20 @@ end
 ##------------------------------------------------------------------------------------------------
 ## Input
 option = {}
-OptionParser.new do |opt|
+parser = OptionParser.new do |opt|
   opt.on('-b branch', '--branch=branch', 'master | gm1.8') { |v| option[:branch] = v }
+  opt.on('-y yaml', '--yaml=yaml', 'yaml file') { |v| option[:yaml] = v }
   opt.parse!(ARGV)
 end
 p option
+puts parser.help if option.empty?
 
 ##------------------------------------------------------------------------------------------------
 ## Merge
-merger = Merger.new(option[:branch]);
+merger = Merger.new(option[:branch], option[:yaml]);
 # merger.p4_pre_check();
-# merger.p4_sync();
+merger.p4_sync();
 # merger.load_last_commit();
-merger.make_fslist();
+# merger.make_fslist();
 
 merger.finish();
