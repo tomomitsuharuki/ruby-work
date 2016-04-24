@@ -103,19 +103,20 @@
 # WEB APP
 #---------------------------------------
 ./etc/www/app
-./etc/www/app/.DS_Store
-./etc/www/app/LAST_COMMIT
-./etc/www/app/data
-./etc/www/app/data/target.txt
-./etc/www/app/data/target_bk.txt
-./etc/www/app/data/target_orig.txt
-./etc/www/app/data/target_test.txt
-./etc/www/app/data/tmp.txt
-./etc/www/app/data/tmp_orig.txt
-./etc/www/app/fslist.rb
-./etc/www/app/merge.rb
-./etc/www/app/merge.sh
-./etc/www/app/test_fslist.rb
+./etc/www/app/working.js
+./etc/www/app/js
+./etc/www/app/js/views
+./etc/www/app/js/views/SettingScreenSizeContainerPaneLeftView.js
+./etc/www/app/js/views/CautionOptionView.js
+./etc/www/app/js/views/autorunDialog
+./etc/www/app/js/views/autorunDialog/AuthenticationDialogFormContainer.js
+./etc/www/app/js/views/autorunDialog/AutorunDialogCommonView.js
+./etc/www/app/js/views/autorunDialog/AuthenticationDialogView.js
+./etc/www/app/js/views/autorunDialog/AuthenticationDialogButtonContainer.js
+./etc/www/app/js/views/home
+./etc/www/app/js/views/home/SecondLayerContainer.js
+./etc/www/app/js/views/home/FirstLayerContainer.js
+./etc/www/app/js/views/home/SecondLayerAllContainer.js
 #---------------------------------------
 # BROWSER DATA
 #---------------------------------------

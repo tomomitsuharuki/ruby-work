@@ -32,9 +32,8 @@ fs_buffer = File.read(fs_file);
 
 # puts tmp_buffer;
 # puts fs_buffer;
-
-puts web_app_start;
-puts web_app_end;
+# puts web_app_start;
+# puts web_app_end;
 
 pos_start = fs_buffer.index(web_app_start) + web_app_start.size;
 pos_end = fs_buffer.index(web_app_end);
@@ -42,4 +41,4 @@ pos_end = fs_buffer.index(web_app_end);
 fs_buffer.slice!(pos_start..pos_end);
 fs_buffer.insert(pos_start, tmp_buffer);
 
-File.write("data/target_test.txt", fs_buffer);
+File.write(fs_file, fs_buffer);
